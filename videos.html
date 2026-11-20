@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>1UP Video Work · Jacob Valdez</title>
+<link rel="icon" href="img/logo.jpg">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #0d0f1a; color: #e9ecf5; line-height: 1.5; }
+  .banner { background: #05060c; color: #b9bfd3; font-size: 13px; text-align: center; padding: 6px 12px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: clamp(26px, 4vw, 38px); margin: 0 0 6px; }
+  .lead { color: #b9bfd3; margin: 0 0 32px; max-width: 70ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+  figure { margin: 0; background: #161a2b; border: 1px solid #262b44; border-radius: 14px; overflow: hidden; }
+  video { display: block; width: 100%; background: #000; }
+  .tall { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(220px, 320px) 1fr; }
+  .tall video { height: 100%; object-fit: contain; }
+  figcaption { padding: 14px 16px 16px; }
+  figcaption b { display: block; font-size: 17px; margin-bottom: 2px; }
+  figcaption span { color: #b9bfd3; font-size: 14px; }
+  a { color: #ffd23f; }
+  @media (max-width: 640px) { .tall { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="banner">Concept work for 1UP VIDEOGAMES, Covina CA · shared with the owner's OK</div>
+<main>
+  <h1>1UP VIDEOGAMES: video work</h1>
+  <p class="lead">Three intro styles for the store's videos, plus a vertical "New this week" reel for Instagram and TikTok.
+    The music is an original Game Boy-style chiptune track made in code for 1UP.
+    <a href="./">← Back to the photo-to-listing demo</a></p>
+
+  <div class="grid">
+    <figure>
+      <video controls preload="none" playsinline poster="videos/intro-neon-crt.jpg" src="videos/intro-neon-crt.mp4"></video>
+      <figcaption><b>Intro A · Neon CRT</b><span>Synthwave grid and glowing retro TV look. 12 seconds.</span></figcaption>
+    </figure>
+    <figure>
+      <video controls preload="none" playsinline poster="videos/intro-glossy.jpg" src="videos/intro-glossy.mp4"></video>
+      <figcaption><b>Intro B · Glossy</b><span>Bright, bouncy, kid-friendly style. 12 seconds.</span></figcaption>
+    </figure>
+    <figure>
+      <video controls preload="none" playsinline poster="videos/intro-showcase.jpg" src="videos/intro-showcase.mp4"></video>
+      <figcaption><b>Intro C · Showcase</b><span>Dark and gold, collector-focused style. 12 seconds.</span></figcaption>
+    </figure>
+    <figure class="tall">
+      <video controls preload="none" playsinline poster="videos/reel-new-this-week.jpg" src="videos/reel-new-this-week.mp4"></video>
+      <figcaption><b>Reel · New this week</b><span>A vertical 9:16 reel for social media that shows off new arrivals with price and condition. It uses sample items and is a concept for the store's weekly posts. 16 seconds, no audio.</span></figcaption>
+    </figure>
+  </div>
+</main>
+</body>
+</html>

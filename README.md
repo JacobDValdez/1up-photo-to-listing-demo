@@ -13,6 +13,18 @@ current habit of snapping a photo, and each photo becomes a full web listing
 Built by [Jacob (Jake) Valdez](https://github.com/JacobDValdez) with plain HTML, CSS and
 JavaScript (no frameworks, no build step).
 
+![1UP demo storefront](screenshots/storefront.jpg)
+
+## Video work for 1UP
+
+Three intro styles for the store's videos plus a vertical "New this week" reel for social media.
+The music is an original Game Boy-style chiptune made in code.
+**[▶ Watch all four videos](https://jacobdvaldez.github.io/1up-photo-to-listing-demo/videos.html)**
+
+| Neon CRT | Glossy | Showcase | Reel |
+|---|---|---|---|
+| [![Neon CRT intro](videos/intro-neon-crt.jpg)](https://jacobdvaldez.github.io/1up-photo-to-listing-demo/videos.html) | [![Glossy intro](videos/intro-glossy.jpg)](https://jacobdvaldez.github.io/1up-photo-to-listing-demo/videos.html) | [![Showcase intro](videos/intro-showcase.jpg)](https://jacobdvaldez.github.io/1up-photo-to-listing-demo/videos.html) | [![New this week reel](videos/reel-new-this-week.jpg)](https://jacobdvaldez.github.io/1up-photo-to-listing-demo/videos.html) |
+
 ## Run it
 
 Option A – no install: double-click `index.html`.

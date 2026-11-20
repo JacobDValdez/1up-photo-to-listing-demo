@@ -1,0 +1,9 @@
+# Publish only the demo site (video projects and renders stay local)
+/*
+!/index.html
+!/css/
+!/js/
+!/img/
+!/serve.js
+!/README.md
+!/.gitignore

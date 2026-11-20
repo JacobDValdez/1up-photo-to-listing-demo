@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="36" viewBox="0 0 48 9" shape-rendering="crispEdges">
+  <!-- 1UP pixel strip: original artwork, one repeating tile (each unit = one big pixel) -->
+  <rect width="48" height="9" fill="#bfe0ff"/>
+  <rect y="0" width="48" height="2" fill="#a9d4ff"/>
+  <!-- clouds -->
+  <g fill="#ffffff">
+    <rect x="3" y="2" width="5" height="1"/><rect x="2" y="3" width="7" height="1"/>
+    <rect x="28" y="1" width="4" height="1"/><rect x="27" y="2" width="6" height="1"/>
+  </g>
+  <!-- distant hill -->
+  <g fill="#8fd16a">
+    <rect x="13" y="5" width="8" height="1"/><rect x="12" y="6" width="10" height="1"/>
+    <rect x="36" y="6" width="7" height="1"/>
+  </g>
+  <!-- coin -->
+  <rect x="22" y="3" width="2" height="2" fill="#fcd535"/><rect x="22" y="3" width="1" height="1" fill="#fff3a6"/>
+  <!-- floating bricks -->
+  <g fill="#c63b3b"><rect x="40" y="2" width="4" height="2"/></g>
+  <g fill="#8e2626"><rect x="42" y="2" width="1" height="1"/><rect x="40" y="3" width="1" height="1"/></g>
+  <!-- grass + dirt -->
+  <rect y="7" width="48" height="1" fill="#5bb33a"/>
+  <g fill="#7dc63f"><rect x="0" y="7" width="2" height="1"/><rect x="6" y="7" width="3" height="1"/><rect x="14" y="7" width="2" height="1"/><rect x="25" y="7" width="3" height="1"/><rect x="33" y="7" width="2" height="1"/><rect x="41" y="7" width="3" height="1"/></g>
+  <rect y="8" width="48" height="1" fill="#a86a3a"/>
+  <g fill="#8a5428"><rect x="3" y="8" width="1" height="1"/><rect x="11" y="8" width="1" height="1"/><rect x="19" y="8" width="1" height="1"/><rect x="30" y="8" width="1" height="1"/><rect x="38" y="8" width="1" height="1"/><rect x="45" y="8" width="1" height="1"/></g>
+</svg>

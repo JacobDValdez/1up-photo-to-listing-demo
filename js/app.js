@@ -176,10 +176,10 @@ function itemCard(it) {
   const sold = it.status === 'sold', held = it.status === 'reserved';
   return `<a class="card ${sold ? 'sold' : ''}" href="#/item/${it.id}">
     <div class="card-img"><img src="${esc(photoSrc(it.photos[0]))}" alt="${esc(it.alt)}" loading="lazy">
-      ${isNew(it) && !sold ? '<span class="pill new">NEW</span>' : ''}${held ? '<span class="pill hold">On hold</span>' : ''}${sold ? '<span class="pill soldp">SOLD</span>' : ''}</div>
-    <div class="card-body"><div class="card-sys">${esc(sysName(it.system))} · ${esc(PACKAGING[it.packaging].label)}</div>
+      ${isNew(it) && !sold ? '<span class="pill new">New</span>' : ''}${held ? '<span class="pill hold">On hold</span>' : ''}${sold ? '<span class="pill soldp">Sold</span>' : ''}</div>
+    <div class="card-body"><div class="card-sys">${esc(sysName(it.system))} · ${esc(PACKAGING[it.packaging].label.toLowerCase().replace(/^./, c => c.toUpperCase()))}</div>
       <div class="card-title">${esc(it.title)}</div>
-      <div class="card-foot"><span class="price">${money(it.price)}</span>${it.tested ? '<span class="tested">✓ Tested</span>' : ''}</div></div></a>`;
+      <div class="card-foot"><span class="price">${money(it.price)}</span>${it.tested ? '<span class="tested">Tested</span>' : ''}</div></div></a>`;
 }
 const pkgOptions = sel => Object.entries(PACKAGING).map(([k, p]) => `<option value="${k}" ${sel === k ? 'selected' : ''}>${esc(p.long)}</option>`).join('');
 const isNew = it => Date.now() - new Date(it.createdAt) < 2 * 864e5;
@@ -213,9 +213,9 @@ function requestBox(soldHits) {
 /* Big shortcut banners for the left column (desktop), like a store bulletin board. */
 function sideBanners() {
   return `<nav class="side-banners" aria-label="Shortcuts">
-    <a class="sb sb-buy" href="#/trade"><span class="sb-big">We buy<br>games</span><span class="sb-small">Cash or store credit, quoted on the spot</span></a>
-    <a class="sb sb-visit" href="#visit-h" data-action="scroll-visit"><span class="sb-big">Visit<br>the store</span><span class="sb-small">111 N Citrus Ave · daily 12–7</span></a>
-    <a class="sb sb-live" href="https://www.whatnot.com/user/1up_sharkz/shop" target="_blank" rel="noopener"><span class="sb-big">Live on<br>Whatnot</span><span class="sb-small">Bid on games during live shows</span></a>
+    <a class="sb sb-buy" href="#/trade"><span class="sb-big">We buy games</span><span class="sb-small">Cash or store credit, quoted on the spot</span></a>
+    <a class="sb sb-visit" href="#visit-h" data-action="scroll-visit"><span class="sb-big">Visit the store</span><span class="sb-small">111 N Citrus Ave · daily 12–7</span></a>
+    <a class="sb sb-live" href="https://www.whatnot.com/user/1up_sharkz/shop" target="_blank" rel="noopener"><span class="sb-big">Live on Whatnot</span><span class="sb-small">Bid on games during live shows</span></a>
   </nav>`;
 }
 
@@ -344,6 +344,11 @@ function visitBlock() {
     </ul></section>`;
 }
 
+/* Hero visual: the 1UP logo in its rainbow ring. */
+function heroArt() {
+  return `<div class="hero-art"><div class="hero-logo" aria-hidden="true"><div class="ring"><img src="img/logo.jpg" alt=""></div></div></div>`;
+}
+
 function viewShop() {
   const live = Store.s.items.filter(i => i.status === 'live' || i.status === 'reserved');
   const sold = Store.s.items.filter(i => i.status === 'sold').sort((a, b) => new Date(b.soldAt) - new Date(a.soldAt));
@@ -356,20 +361,19 @@ function viewShop() {
   const soldHits = filters.q ? sold.filter(i => normalize(i.title).includes(normalize(filters.q))) : [];
   app().innerHTML = `
   ${filters.q ? '' : `<section class="hero${heroIntro ? ' intro' : ''}">
-    <div class="aurora" aria-hidden="true" style="--aurora-delay:-${(performance.now() / 1000).toFixed(2)}s"><span class="a1"></span><span class="a2"></span><span class="a3"></span></div>
     <div class="hero-copy">
-      <span class="eyebrow"><span class="dot${storeStatus().open ? '' : ' closed'}"></span>${esc(storeStatus().text)}<span class="eyebrow-loc"> · Covina, CA</span></span>
-      <h1>Retro games, <span class="grad">tested</span> and ready to play.</h1>
-      <p>Every used game is one of one. We photograph, test and list it the day it comes in, so reserve it before it's gone.</p>
-      <div class="hero-cta"><button class="btn primary lg" data-action="scroll-new">Shop new arrivals</button><a class="btn ghost lg" href="#/trade">Sell us your games</a></div>
+      <p class="eyebrow"><span class="dot${storeStatus().open ? '' : ' closed'}"></span>${esc(storeStatus().text)}<span class="eyebrow-loc"> · Covina, CA</span></p>
+      <h1>Retro games, tested and ready to play</h1>
+      <p class="hero-sub">Every used game is one of one. We photograph, test and list it the day it comes in, so reserve it before it's gone.</p>
+      <div class="hero-cta"><button class="btn primary lg" data-action="scroll-new">Shop new arrivals</button><a class="btn lg" href="#/trade">Sell us your games</a></div>
       <dl class="hero-stats">
-        <div><dt>5.0★</dt><dd><a href="https://www.whatnot.com/user/1up_sharkz" target="_blank" rel="noopener">875 Whatnot reviews</a></dd></div>
+        <div><dt>5.0</dt><dd><a href="https://www.whatnot.com/user/1up_sharkz" target="_blank" rel="noopener">stars, 875 Whatnot reviews</a></dd></div>
         <div><dt>4.9K</dt><dd>items sold</dd></div>
         <div><dt>~1 day</dt><dd>to ship</dd></div>
         <div><dt>Tested</dt><dd>or your money back</dd></div>
       </dl>
     </div>
-    <div class="hero-art" aria-hidden="true"><div class="ring"><img src="img/logo.jpg" alt=""></div></div>
+    ${heroArt()}
   </section>`}
   ${filters.q ? '' : quickLinks()}
   ${filters.q ? '' : shopByTiles(live)}
@@ -389,11 +393,11 @@ function viewShop() {
     ${igSidebar()}
     </div>
     <div>
-      <div class="section-head" id="new-arrivals"><h2>${filters.q ? `Results for “${esc(filters.q)}”` : 'New Arrivals'}</h2><span class="muted">${list.length} item${list.length === 1 ? '' : 's'}</span></div>
+      <div class="section-head" id="new-arrivals"><h2>${filters.q ? `Results for “${esc(filters.q)}”` : 'New arrivals'}</h2><span class="muted">${list.length} item${list.length === 1 ? '' : 's'}</span></div>
       ${!list.length || showRequest ? requestBox(soldHits) : ''}
       <div class="grid">${list.map(itemCard).join('')}</div>
       ${list.length && filters.q && !showRequest ? `<div class="request-slim">Not the one you're after? <button class="btn small" data-action="show-request">Request “${esc(filters.q)}”</button></div>` : ''}
-      <div class="section-head"><h2>Recently Sold${filters.q && soldHits.length ? ` · “${esc(filters.q)}”` : ''}</h2><span class="muted">Missed one? <a href="#/wishlist">Set an alert</a></span></div>
+      <div class="section-head"><h2>Recently sold${filters.q && soldHits.length ? ` · “${esc(filters.q)}”` : ''}</h2><span class="muted">Missed one? <a href="#/wishlist">Set an alert</a></span></div>
       <div class="grid sold-grid">${(filters.q && soldHits.length ? soldHits : sold).map(itemCard).join('') || '<div class="empty">No sold items yet.</div>'}</div>
     </div>
   </div>
@@ -431,7 +435,7 @@ function viewItem(id) {
     <div class="pinfo">
       <div class="card-sys">${esc(sysName(it.system))} · ${esc(CATEGORIES[it.category])}</div>
       <h1>${esc(it.title)}</h1>
-      <div class="big-price">${money(it.price)} ${sold ? '<span class="pill soldp">SOLD ' + fmtDate(it.soldAt) + '</span>' : held ? '<span class="pill hold">On hold for pickup</span>' : '<span class="pill instock">1 in stock</span>'}</div>
+      <div class="big-price"><span class="price">${money(it.price)}</span> ${sold ? '<span class="pill soldp">Sold ' + fmtDate(it.soldAt) + '</span>' : held ? '<span class="pill hold">On hold for pickup</span>' : '<span class="pill instock">1 in stock</span>'}</div>
       <div class="guarantee"><strong>Tested or your money back.</strong> Every item is tested by our staff before it's listed and covered by a 30-day warranty. If it doesn't work, bring it back for a full refund or exchange.</div>
       ${sold ? `<button class="btn primary wide" data-action="goto-wish" data-game="${esc(it.game)}" data-system="${it.system}">Notify me when another comes in</button>`
         : held ? `<button class="btn wide" disabled>Reserved — check back soon</button>`
@@ -635,7 +639,7 @@ function viewWishlist() {
     const already = s.items.filter(i => i.status === 'live' && wishMatches(w, i));
     Store.save(); render();
     oneUp('1UP!', e.submitter);
-    toast(already.length ? `Alert saved — and we already have <a href="#/item/${already[0].id}">${esc(already[0].title)}</a> in stock!` : 'Alert saved. We\'ll ping you when it lands.');
+    toast(already.length ? `Alert saved — and we already have <a href="#/item/${already[0].id}">${esc(already[0].title)}</a> in stock` : 'Alert saved. We\'ll ping you when it lands.');
   });
 }
 
@@ -714,7 +718,7 @@ document.addEventListener('click', async e => {
       try { await navigator.clipboard.writeText(t); } catch (err) { $('#cap').select(); document.execCommand('copy'); }
       b.textContent = 'Copied'; break;
     }
-    case 'mark-sold': item.status = 'sold'; item.soldAt = new Date().toISOString(); s.reservations = s.reservations.filter(r => r.itemId !== item.id); Store.save(); render(); toast(`Marked sold — moved to Recently Sold.`); break;
+    case 'mark-sold': item.status = 'sold'; item.soldAt = new Date().toISOString(); s.reservations = s.reservations.filter(r => r.itemId !== item.id); Store.save(); render(); toast(`Marked sold — moved to Recently sold`); break;
     case 'release': item.status = 'live'; s.reservations = s.reservations.filter(r => r.itemId !== item.id); Store.save(); render(); break;
     case 'gallery': {
       const it = s.items.find(i => i.id === location.hash.split('/')[2]);
@@ -730,7 +734,7 @@ document.addEventListener('click', async e => {
         ev.preventDefault(); const f = new FormData(ev.target);
         s.reservations.push({ itemId: item.id, name: f.get('name'), phone: f.get('phone'), until: new Date(Date.now() + 48 * 36e5).toISOString() });
         item.status = 'reserved'; Store.save(); oneUp('1UP!', ev.submitter); closeModal(); render();
-        toast(`Held until ${new Date(Date.now() + 48 * 36e5).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}. See you at the counter!`);
+        toast(`Held until ${new Date(Date.now() + 48 * 36e5).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}. See you at the counter`);
       });
       break;
     case 'ship-demo': toast('Shipping checkout would hand off to Shopify checkout in production.'); break;

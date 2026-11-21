@@ -80,8 +80,8 @@ function renderMarquee() {
   _marqueeKey = key;
   if (!items.length) { el.hidden = true; return; }
   el.hidden = false;
-  const run = items.map(i => `<a class="mq-item" href="#/item/${i.id}">${esc(i.title)} <b>${money(i.price)}</b></a><span class="mq-star" aria-hidden="true">★</span>`).join('');
-  el.innerHTML = `<span class="mq-label">JUST IN</span>
+  const run = items.map(i => `<a class="mq-item" href="#/item/${i.id}">${esc(i.title)} <b>${money(i.price)}</b></a><span class="mq-star" aria-hidden="true">·</span>`).join('');
+  el.innerHTML = `<span class="mq-label">Just in</span>
     <div class="mq-window"><div class="mq-tilt"><div class="mq-track" style="--mq-dur:${items.length * 5}s">
       <div class="mq-run">${run}</div><div class="mq-run" aria-hidden="true">${run}</div></div></div></div>`;
 }

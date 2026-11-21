@@ -1,6 +1,6 @@
 /* 1UP VIDEOGAMES — photo-to-listing CONCEPT DEMO. All data lives in localStorage. */
 
-const DB_KEY = 'oneup-concept-demo-v2';
+const DB_KEY = 'oneup-concept-demo-v4';
 const SITE_URL = 'https://1upgames.example'; // placeholder domain for captions/notifications
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -35,12 +35,18 @@ const Store = {
   load() {
     try { this.s = JSON.parse(localStorage.getItem(DB_KEY)); } catch (e) { this.s = null; }
     if (!this.s || !this.s.items) { this.s = seedState(); this.save(); }
+    const s = this.s; // fill in anything an older saved demo is missing
+    s.settings = Object.assign(JSON.parse(JSON.stringify(DEFAULT_SETTINGS)), s.settings || {});
+    s.trades = s.trades || []; s.intake = s.intake || []; s.ticket = s.ticket || newTicket();
+    s.customers = s.customers || []; s.ledger = s.ledger || [];
+    s.customCatalog = s.customCatalog || []; s.customSystems = s.customSystems || {};
+    applyCustomCatalog();
   },
   save() {
     try { localStorage.setItem(DB_KEY, JSON.stringify(this.s)); return true; }
     catch (e) { toast('Browser storage is full — remove some photos or reset the demo.', 'warn'); return false; }
   },
-  reset() { this.s = seedState(); this.save(); },
+  reset() { this.s = seedState(); this.save(); applyCustomCatalog(); },
   nextId() { this.s.seq = (this.s.seq || 100) + 1; return 'i' + this.s.seq; },
 };
 
@@ -57,6 +63,7 @@ function makeItem(o) {
     photos: o.photos || phPhotos(o.game, o.system, category, o.n || 3),
     alt: buildAlt(title), status: o.status || 'live',
     createdAt: o.created || daysAgo(1), soldAt: o.soldAt || null,
+    cost: o.cost || null, compareAt: o.compareAt || null, sale: o.sale || null,
   };
   it.description = o.description || buildDescription(it);
   it.slug = slugify(title) + '-' + it.id;
@@ -65,18 +72,22 @@ function makeItem(o) {
 
 function seedState() {
   const items = [
-    { id: 'i1',  game: 'Game Boy Advance SP', system: 'GBA', packaging: 'Loose', price: '149.99', condition: 'A', created: daysAgo(0, 3), title: 'Game Boy Advance SP AGS-101 Pearl Blue - Game Boy Advance Loose', specs: { model: 'AGS-101 (backlit)', shell: 'Original', screen: 'Original', battery: '94% – holds about 9 hrs', charger: 'Yes – OEM' }, n: 4 },
-    { id: 'i2',  game: 'Pokemon Red', system: 'GB', packaging: 'Loose', price: '39.99', created: daysAgo(0, 5), specs: { saveBattery: 'Holds save' } },
+    { id: 'i1',  game: 'Game Boy Advance SP', system: 'GBA', packaging: 'Loose', price: '149.99', cost: '55.00', condition: 'A', created: daysAgo(0, 3), title: 'Game Boy Advance SP AGS-101 Pearl Blue - Game Boy Advance Loose', specs: { model: 'AGS-101 (backlit)', shell: 'Original', screen: 'Original', battery: '94% – holds about 9 hrs', charger: 'Yes – OEM' }, n: 4 },
+    { id: 'i2',  game: 'Pokemon Red', system: 'GB', packaging: 'Loose', price: '39.99', cost: '16.00', created: daysAgo(0, 5), specs: { saveBattery: 'Holds save' } },
     { id: 'i3',  game: 'Pokemon Crystal', system: 'GBC', packaging: 'Loose', price: '64.99', created: daysAgo(0, 8), specs: { saveBattery: 'Replaced (new battery)' } },
     { id: 'i4',  game: 'Pokemon Emerald', system: 'GBA', packaging: 'Loose', price: '79.99', condition: 'A', created: daysAgo(1, 2) },
     { id: 'i5',  game: 'Super Mario World', system: 'SNES', packaging: 'Loose', price: '27.99', condition: 'C', created: daysAgo(1, 6), specs: { label: 'Original – worn' } },
-    { id: 'i6',  game: 'Chrono Trigger', system: 'SNES', packaging: 'Loose', price: '189.99', condition: 'A', created: daysAgo(2) },
+    { id: 'i6',  game: 'Chrono Trigger', system: 'SNES', packaging: 'Loose', price: '189.99', cost: '85.00', condition: 'A', created: daysAgo(2) },
     { id: 'i7',  game: 'EarthBound', system: 'SNES', packaging: 'Loose', price: '279.99', created: daysAgo(2, 4) },
     { id: 'i8',  game: 'The Legend of Zelda: Ocarina of Time', system: 'N64', packaging: 'Loose', price: '37.99', created: daysAgo(3) },
     { id: 'i9',  game: 'Mario Kart 64', system: 'N64', packaging: 'CIB', price: '129.99', condition: 'B', created: daysAgo(3, 5), n: 5 },
     { id: 'i10', game: 'Nintendo 64 Console', system: 'N64', packaging: 'Loose', price: '109.99', created: daysAgo(4), title: 'Nintendo 64 Console Charcoal - Nintendo 64 Loose', specs: { model: 'NUS-001 Charcoal', controllers: '1 OEM controller (tight stick)', mods: 'None' } },
-    { id: 'i11', game: 'Super Smash Bros. Melee', system: 'GCN', packaging: 'CIB', price: '84.99', created: daysAgo(5), specs: { manual: 'Yes' } },
-    { id: 'i12', game: 'Pokemon Yellow', system: 'GB', packaging: 'Loose', price: '44.99', created: daysAgo(6), status: 'sold', soldAt: daysAgo(5, 20) },
+    { id: 'i11', game: 'Super Smash Bros. Melee', system: 'GCN', packaging: 'CIB', price: '74.99', compareAt: '84.99', cost: '34.00', created: daysAgo(5), specs: { manual: 'Yes' } },
+    { id: 'i14', game: 'GoldenEye 007', system: 'N64', packaging: 'Loose', price: '44.99', condition: 'B', cost: '12.00', created: daysAgo(62) },
+    { id: 'i15', game: 'Tetris', system: 'GB', packaging: 'Loose', price: '14.99', cost: '3.00', created: daysAgo(41) },
+    { id: 'i16', game: 'Sonic the Hedgehog 2', system: 'GEN', packaging: 'Loose', price: '9.99', condition: 'C', cost: '4.00', created: daysAgo(48), specs: { label: 'Original – worn' } },
+    { id: 'i17', game: "Kirby's Dream Land", system: 'GB', packaging: 'Loose', price: '14.99', cost: '6.00', created: daysAgo(35) },
+    { id: 'i12', game: 'Pokemon Yellow', system: 'GB', packaging: 'Loose', price: '44.99', created: daysAgo(6), status: 'sold', soldAt: daysAgo(5, 20), sale: { price: 44.99, credit: 11.5, rest: 33.49, method: 'card', customerId: 'c2' } },
     { id: 'i13', game: 'Super Metroid', system: 'SNES', packaging: 'Loose', price: '59.99', created: daysAgo(7), status: 'sold', soldAt: daysAgo(6) },
   ].map(makeItem);
   return {
@@ -86,6 +97,26 @@ function seedState() {
       { id: 'w2', game: 'Banjo-Kazooie', system: '', maxPrice: '', contact: '(626) 555-0142', via: 'sms', created: daysAgo(9) },
     ],
     outbox: [], reservations: [], draft: null,
+    settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)), ticket: newTicket(),
+    customCatalog: [], customSystems: {},
+    customers: [
+      { id: 'c1', name: 'Marcus Reyes', phone: '(626) 555-0187', email: '', created: daysAgo(0, 2) },
+      { id: 'c2', name: 'Leo Martinez', phone: '(626) 555-0142', email: '', created: daysAgo(30) },
+    ],
+    ledger: [
+      { id: 'l3', customerId: 'c1', at: daysAgo(0, 2), amount: 41, kind: 'trade', note: 'Trade-in: Pokemon Gold, Banjo-Kazooie', ref: 't1', staff: '' },
+      { id: 'l2', customerId: 'c2', at: daysAgo(5, 20), amount: -11.5, kind: 'sale', note: 'Used on Pokemon Yellow - Game Boy Loose', ref: 'i12', staff: '' },
+      { id: 'l1', customerId: 'c2', at: daysAgo(12), amount: 37, kind: 'trade', note: 'Trade-in: Donkey Kong Country, Super Mario Kart', ref: 't0', staff: '' },
+    ],
+    trades: [{ id: 't1', at: daysAgo(0, 2), customerId: 'c1', customer: 'Marcus Reyes', phone: '(626) 555-0187', payout: 'credit', total: 41, lines: [
+      { catalogId: 'pkmn-gold', game: 'Pokemon Gold', system: 'GBC', category: 'cartridge', packaging: 'Loose', condition: 'B', works: true, guide: 55, cash: 18, credit: 25 },
+      { catalogId: 'banjo', game: 'Banjo-Kazooie', system: 'N64', category: 'cartridge', packaging: 'Loose', condition: 'A', works: true, guide: 30, cash: 12, credit: 16 }] },
+      { id: 't0', at: daysAgo(12), customerId: 'c2', customer: 'Leo Martinez', phone: '(626) 555-0142', payout: 'credit', total: 37, lines: [
+      { catalogId: 'dkc', game: 'Donkey Kong Country', system: 'SNES', category: 'cartridge', packaging: 'Loose', condition: 'A', works: true, guide: 25, cash: 10, credit: 13 },
+      { catalogId: 'smk', game: 'Super Mario Kart', system: 'SNES', category: 'cartridge', packaging: 'Loose', condition: 'A', works: true, guide: 45, cash: 18, credit: 24 }] }],
+    intake: [
+      { id: 't1-0', tradeId: 't1', from: 'Marcus Reyes, ' + fmtDate(daysAgo(0, 2)), catalogId: 'pkmn-gold', game: 'Pokemon Gold', system: 'GBC', category: 'cartridge', packaging: 'Loose', condition: 'B', works: true, cost: 25 },
+      { id: 't1-1', tradeId: 't1', from: 'Marcus Reyes, ' + fmtDate(daysAgo(0, 2)), catalogId: 'banjo', game: 'Banjo-Kazooie', system: 'N64', category: 'cartridge', packaging: 'Loose', condition: 'A', works: true, cost: 16 }],
   };
 }
 
@@ -123,8 +154,8 @@ function wishMatches(w, it) {
   if (w.maxPrice && Number(it.price) > Number(w.maxPrice)) return false;
   return true;
 }
-function notifyWishlist(it) {
-  const hits = Store.s.wishlist.filter(w => wishMatches(w, it));
+function notifyWishlist(it, only = () => true) {
+  const hits = Store.s.wishlist.filter(w => wishMatches(w, it) && only(w));
   const msgs = hits.map(w => {
     const body = w.via === 'sms'
       ? `1UP VIDEOGAMES: Good news — ${it.title} just came in for ${money(it.price)}. It's one of one. Reserve it: ${itemUrl(it)} Reply STOP to opt out.`
@@ -176,10 +207,10 @@ function itemCard(it) {
   const sold = it.status === 'sold', held = it.status === 'reserved';
   return `<a class="card ${sold ? 'sold' : ''}" href="#/item/${it.id}">
     <div class="card-img"><img src="${esc(photoSrc(it.photos[0]))}" alt="${esc(it.alt)}" loading="lazy">
-      ${isNew(it) && !sold ? '<span class="pill new">New</span>' : ''}${held ? '<span class="pill hold">On hold</span>' : ''}${sold ? '<span class="pill soldp">Sold</span>' : ''}</div>
+      ${isNew(it) && !sold ? '<span class="pill new">New</span>' : ''}${held ? '<span class="pill hold">On hold</span>' : ''}${it.compareAt && !sold && !held && !isNew(it) ? '<span class="pill sale">Sale</span>' : ''}${sold ? '<span class="pill soldp">Sold</span>' : ''}</div>
     <div class="card-body"><div class="card-sys">${esc(sysName(it.system))} · ${esc(PACKAGING[it.packaging].label.toLowerCase().replace(/^./, c => c.toUpperCase()))}</div>
       <div class="card-title">${esc(it.title)}</div>
-      <div class="card-foot"><span class="price">${money(it.price)}</span>${it.tested ? '<span class="tested">Tested</span>' : ''}</div></div></a>`;
+      <div class="card-foot"><span><span class="price">${money(it.price)}</span>${it.compareAt ? ` <s class="was">${money(it.compareAt)}</s>` : ''}</span>${it.tested ? '<span class="tested">Tested</span>' : ''}</div></div></a>`;
 }
 const pkgOptions = sel => Object.entries(PACKAGING).map(([k, p]) => `<option value="${k}" ${sel === k ? 'selected' : ''}>${esc(p.long)}</option>`).join('');
 const isNew = it => Date.now() - new Date(it.createdAt) < 2 * 864e5;
@@ -435,7 +466,7 @@ function viewItem(id) {
     <div class="pinfo">
       <div class="card-sys">${esc(sysName(it.system))} · ${esc(CATEGORIES[it.category])}</div>
       <h1>${esc(it.title)}</h1>
-      <div class="big-price"><span class="price">${money(it.price)}</span> ${sold ? '<span class="pill soldp">Sold ' + fmtDate(it.soldAt) + '</span>' : held ? '<span class="pill hold">On hold for pickup</span>' : '<span class="pill instock">1 in stock</span>'}</div>
+      <div class="big-price"><span class="price">${money(it.price)}</span>${it.compareAt ? ` <s class="was">${money(it.compareAt)}</s>` : ''} ${sold ? '<span class="pill soldp">Sold ' + fmtDate(it.soldAt) + '</span>' : held ? '<span class="pill hold">On hold for pickup</span>' : '<span class="pill instock">1 in stock</span>'}</div>
       <div class="guarantee"><strong>Tested or your money back.</strong> Every item is tested by our staff before it's listed and covered by a 30-day warranty. If it doesn't work, bring it back for a full refund or exchange.</div>
       ${sold ? `<button class="btn primary wide" data-action="goto-wish" data-game="${esc(it.game)}" data-system="${it.system}">Notify me when another comes in</button>`
         : held ? `<button class="btn wide" disabled>Reserved — check back soon</button>`
@@ -444,7 +475,7 @@ function viewItem(id) {
       <h3>Spec &amp; trust box</h3>
       <table class="specs">${specRows(it)}</table>
       <h3>Description</h3><p>${esc(it.description)}</p>
-      <details class="staff-tools"><summary>Staff tools</summary><div class="row"><button class="btn small" data-action="caption" data-id="${it.id}">Social caption</button><span class="price-links"><a class="btn small pc-btn" href="${esc(pricechartingUrl(it.game, it.system))}" target="_blank" rel="noopener">PriceCharting ↗</a><a class="btn small ebay-btn" href="${esc(ebaySoldUrl(it.game, it.system, it.packaging))}" target="_blank" rel="noopener" title="Completed and sold eBay listings">eBay sold ↗</a></span>${!sold ? `<button class="btn small" data-action="mark-sold" data-id="${it.id}">Mark sold</button>` : ''}</div></details>
+      <details class="staff-tools"><summary>Staff tools</summary><div class="row"><button class="btn small" data-action="edit-item" data-id="${it.id}">Edit listing</button><button class="btn small" data-action="caption" data-id="${it.id}">Social caption</button><span class="price-links"><a class="btn small pc-btn" href="${esc(pricechartingUrl(it.game, it.system))}" target="_blank" rel="noopener">PriceCharting ↗</a><a class="btn small ebay-btn" href="${esc(ebaySoldUrl(it.game, it.system, it.packaging))}" target="_blank" rel="noopener" title="Completed and sold eBay listings">eBay sold ↗</a></span>${!sold ? `<button class="btn small" data-action="mark-sold" data-id="${it.id}">Mark sold</button>` : ''}</div></details>
     </div></div>`;
 }
 
@@ -454,7 +485,9 @@ function viewStaff() {
   const live = Store.s.items.filter(i => i.status !== 'sold').sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   const unlisted = CATALOG.filter(c => !Store.s.items.some(i => i.game === c.game && i.status !== 'sold'));
   app().innerHTML = `
-  <div class="staff-head"><h1>Staff · Add item</h1><p class="muted">Snap it, check the draft, approve. It's on the site, the caption is ready, and wishlist customers get pinged.</p></div>
+  ${staffTabs('add')}
+  <p class="muted staff-lede">Snap it, check the draft, approve. It's on the site, the caption is ready, and wishlist customers get pinged.</p>
+  ${Store.s.intake.length && !d ? `<div class="intake-note"><span><b>${Store.s.intake.length} traded-in game${Store.s.intake.length > 1 ? 's' : ''}</b> waiting to be tested and listed</span><a class="btn small" href="#/staff/trade">Open the queue</a></div>` : ''}
   <div class="steps"><span class="${!d ? 'on' : 'done'}">1 Photos</span><span class="${d ? 'on' : ''}">2 Review draft</span><span>3 Live + caption</span></div>
   ${!d ? `
   <section class="panel">
@@ -480,11 +513,7 @@ function viewStaff() {
       <button class="btn primary">Check price</button></form>
     <div id="pc-result"></div></section>
   ${wantedPanel()}
-  <section class="panel">
-    <h2>On the shelf (${live.length})</h2>
-    <div class="inv">${live.map(i => `<div class="inv-row"><img src="${esc(photoSrc(i.photos[0]))}" alt=""><div class="inv-t"><a href="#/item/${i.id}">${esc(i.title)}</a><div class="muted small">${money(i.price)} · ${i.status === 'reserved' ? '<b>On hold</b> for ' + esc((Store.s.reservations.find(r => r.itemId === i.id) || {}).name || 'customer') : 'Listed ' + fmtDate(i.createdAt)}</div></div>
-      <div class="inv-a"><button class="btn small" data-action="caption" data-id="${i.id}">Caption</button>${i.status === 'reserved' ? `<button class="btn small" data-action="release" data-id="${i.id}">Release</button>` : ''}<button class="btn small" data-action="mark-sold" data-id="${i.id}">Sold</button></div></div>`).join('')}</div>
-  </section>`;
+  <p class="muted small">Prices, edits and markdowns for everything on the shelf: <a href="#/staff/inventory">Inventory and prices</a>.</p>`;
   if (!d) {
     renderPhotoStrip();
     const drop = $('#drop');
@@ -655,14 +684,13 @@ function viewTrade() {
       <label class="check"><input type="checkbox" id="t-works" checked> It powers on / plays</label>
     </form>
     <div id="quote" class="quote"></div>
-    <p class="muted small">Demo rates: cash 40% and store credit 55% of the sample price guide, adjusted for condition. Real rates are the store's call.</p></section>`;
+    <p class="muted small">Demo rates: cash ${settings().cashPct}% and store credit ${settings().creditPct}% of the sample price guide, adjusted for condition. Staff can change them on the trade-in counter.</p></section>`;
   const fillGames = () => { const k = $('#t-sys').value; $('#t-game').innerHTML = CATALOG.filter(c => c.system === k).map(c => `<option value="${c.id}">${esc(c.game)}</option>`).join('') || '<option value="">(no sample items)</option>'; };
   const quote = () => {
     const c = CATALOG.find(x => x.id === $('#t-game').value);
     if (!c) { $('#quote').innerHTML = '<p class="muted">Bring it in and we\'ll take a look.</p>'; return; }
     const base = $('#t-pkg').value === 'CIB' ? c.cib : c.loose;
-    const k = { A: 1, B: 0.85, C: 0.65 }[$('#t-cond').value] * ($('#t-works').checked ? 1 : 0.25);
-    const cash = Math.floor(base * 0.40 * k), credit = Math.floor(base * 0.55 * k);
+    const { cash, credit } = tradeOffer(base, $('#t-cond').value, $('#t-works').checked);
     if (!$('#q-cash')) $('#quote').innerHTML = `<div class="q-box" aria-live="polite"><div><span>Cash</span><b class="wheel" id="q-cash"></b></div>
       <div class="best"><span>Store credit</span><b class="wheel" id="q-credit"></b><small id="q-more"></small></div></div><p id="q-note"></p>`;
     setWheel($('#q-cash'), cash); setWheel($('#q-credit'), credit);
@@ -704,6 +732,8 @@ document.addEventListener('click', async e => {
       if (!d.title || !(+d.price > 0)) { toast('Title and a price are required.', 'warn'); return; }
       const it = makeItem({ id: Store.nextId(), game: d.game, system: d.system, category: d.category, packaging: d.packaging, condition: d.condition, title: d.title, price: (+d.price).toFixed(2), weightOz: d.weightOz, specs: d.specs, photos: d.photos, description: d.description, created: new Date().toISOString() });
       it.alt = d.alt; it.tested = d.tested; it.testedDate = d.testedDate;
+      if (d.cost) it.cost = (+d.cost).toFixed(2);
+      if (d.intakeId) s.intake = s.intake.filter(x => x.id !== d.intakeId);
       s.items.unshift(it); s.draft = null;
       const sent = notifyWishlist(it);
       Store.save(); render();
@@ -718,7 +748,7 @@ document.addEventListener('click', async e => {
       try { await navigator.clipboard.writeText(t); } catch (err) { $('#cap').select(); document.execCommand('copy'); }
       b.textContent = 'Copied'; break;
     }
-    case 'mark-sold': item.status = 'sold'; item.soldAt = new Date().toISOString(); s.reservations = s.reservations.filter(r => r.itemId !== item.id); Store.save(); render(); toast(`Marked sold — moved to Recently sold`); break;
+    case 'mark-sold': if (item) sellModal(item); break;
     case 'release': item.status = 'live'; s.reservations = s.reservations.filter(r => r.itemId !== item.id); Store.save(); render(); break;
     case 'gallery': {
       const it = s.items.find(i => i.id === location.hash.split('/')[2]);
@@ -766,7 +796,7 @@ document.addEventListener('submit', async e => {
          || CATALOG.find(x => normalize(x.game).includes(normalize(q)) && (!system || x.system === system));
   if (c && !system) system = c.system;
   const game = c ? c.game : q, mk = c ? await lookupMarketPrice(c.game, c.system) : null;
-  const tradeCash = mk && Math.floor(mk.loose * 0.40), tradeCredit = mk && Math.floor(mk.loose * 0.55);
+  const tradeCash = mk && tradeOffer(mk.loose, 'A', true).cash, tradeCredit = mk && tradeOffer(mk.loose, 'A', true).credit;
   $('#pc-result').innerHTML = `<div class="pc-box">
     <div class="pc-title"><b>${esc(game)}</b>${system ? ' · ' + esc(sysName(system)) : ''}</div>
     ${mk ? `<div class="pc-cols"><div><span>Guide loose</span><b>${money(mk.loose)}</b></div><div><span>Guide CIB</span><b>${money(mk.cib)}</b></div><div><span>Trade-in (loose)</span><b>$${tradeCash} / $${tradeCredit}</b><small>cash / credit</small></div></div>`
@@ -801,7 +831,7 @@ function render() {
   renderMarquee();
   const tq = $('#top-q'); if (tq && document.activeElement !== tq) tq.value = filters.q;
   if (page === 'item') viewItem(id);
-  else if (page === 'staff') viewStaff();
+  else if (page === 'staff') id === 'inventory' ? viewInventory() : id === 'trade' ? viewTradeDesk() : id === 'customers' ? viewCustomers() : viewStaff();
   else if (page === 'wishlist') viewWishlist();
   else if (page === 'trade') viewTrade();
   else viewShop();
